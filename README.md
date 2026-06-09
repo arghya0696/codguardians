@@ -12,7 +12,6 @@ You can see this pipeline actively running in the following reference repositori
 ## 🚀 Key Features
 
 * **CI/CD Test Healing:** Automatically catches failing tests or compilation errors, extracts logs, and rewrites broken application logic.
-* **Production Health Healing:** Monitors live application `/health` and `/logs` endpoints. If the app goes down, it diagnoses the stack trace and generates a hotfix.
 * **SonarQube Healing:** Integrates with SonarCloud to automatically resolve code smells and security vulnerabilities.
 * **100% Language Agnostic:** The execution scripts contain zero language-specific logic. You can switch from Java to Python simply by swapping out the JSON configuration file.
 * **Automated GitOps:** Automatically creates feature branches (e.g., `health-fix-...`), stages files, commits changes as `github-actions[bot]`, and opens a detailed PR using the GitHub CLI.
@@ -26,7 +25,6 @@ All automation scripts and configurations live inside the `.github/scripts/` dir
 | Component | Description |
 | :--- | :--- |
 | `self_healer.py` | The core, language-agnostic agent that intercepts CI/CD failures, reads test logs, parses Claude's XML tags (`<files>` and `<code>`), and applies fixes locally. |
-| `health_healer.py` | Production monitor. Pings the health URL. If the status is not `"UP"`, it pulls recent logs, sends them to Claude, and generates a hotfix PR. |
 | `sonar_healer.py` | Connects to the Sonar API to automatically resolve static analysis issues and security vulnerabilities. |
 | `git_manager.py` | Git wrapper that handles dynamic branch creation, commits, and uses `gh pr create` to generate Pull Requests. |
 | `ai-skills.json` | The "brain" configuration. Defines `test_command`, `test_reports_glob`, and language-specific rules (like Spring DI rules or Python exception handling). |
