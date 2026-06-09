@@ -1,6 +1,6 @@
 # codguardians: 🤖 AI Self-Healing Pipeline
 
-Welcome to **codguardians**! This project implements a fully autonomous, language-agnostic AI agent powered by AI models of your choice. It monitors your CI/CD pipelines and production endpoints, automatically diagnosing failures, generating code fixes, and opening GitHub Pull Requests to resolve issues without human intervention.
+Welcome to **codguardians**! This project implements a fully autonomous, language-agnostic AI agent powered by Anthropic's Claude. It monitors your CI/CD pipelines and production endpoints, automatically diagnosing failures, generating code fixes, and opening GitHub Pull Requests to resolve issues without human intervention.
 
 ### 🌟 Live Repository Examples
 You can see this pipeline actively running in the following reference repositories:
