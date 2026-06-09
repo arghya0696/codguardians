@@ -100,3 +100,86 @@ Executes `mvn test` and triggers the AI script if the step fails.
          echo "Tests failed. Invoking AI self-healing script..."
          python .github/scripts/self_healer.py
 ```
+**For Terraform (`terraform-ci.yml`):**
+
+```yaml
+jobs:
+terraform-plan:
+name: "Stage 1 · Terraform Validate"
+runs-on: ubuntu-latest
+outputs:
+plan_output: ${{ steps.capture.outputs.plan_output }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init (local backend, no AWS creds needed)
+        run: terraform init -input=false -backend=false
+
+      # Run validate but don't fail yet — capture output first
+      - name: Terraform Validate
+        id: validate
+        run: |
+          set +e
+          terraform validate 2>&1 | tee /tmp/validate_output.txt
+          echo "exitcode=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      # Always runs so the error text is available to the self-heal job
+      - name: Capture error output
+        id: capture
+        if: always()
+        run: |
+          OUTPUT=$(cat /tmp/validate_output.txt | tail -80)
+          echo "plan_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT"          >> $GITHUB_OUTPUT
+          echo "EOF"              >> $GITHUB_OUTPUT
+
+      - name: Fail if validate errored
+        if: steps.validate.outputs.exitcode != '0'
+        run: exit 1
+
+self-heal:
+name: "Stage 2 · AI Self-Heal"
+runs-on: ubuntu-latest
+needs: terraform-plan
+if: failure()
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # terraform binary is required for the healer's validate retry loop
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init (needed for validate retry)
+        run: terraform init -input=false -backend=false
+
+      - name: Install Python dependencies
+        run: pip install anthropic requests
+
+      # Bridge: write the captured error into the path self_healer.py already knows
+      - name: Write Terraform error into surefire-reports path
+        env:
+          PLAN_OUTPUT: ${{ needs.terraform-plan.outputs.plan_output }}
+        run: |
+          mkdir -p target/surefire-reports
+          echo "$PLAN_OUTPUT" > target/surefire-reports/terraform-validate.txt
+
+      - name: Run AI Self-Healer
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN:      ${{ secrets.GITHUB_TOKEN }}
+        run: python .github/scripts/self_healer.py
+```
