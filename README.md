@@ -39,6 +39,8 @@ This file makes the pipeline language-agnostic. It controls how the AI reads rep
 * **`model_version`**: The Anthropic model ID to use (e.g., `claude-3-5-sonnet-20241022`).
 * **`test_command`**: The command the AI uses to validate its own fixes (e.g., `["mvn", "test"]` or `["pytest", "-v"]`).
 * **`test_reports_glob`**: Where the AI should look for error logs (e.g., `target/surefire-reports/*.txt` or `reports/test-results.xml`).
+* **Dynamic Rule Injection (Optional)**: You can add custom array blocks to teach the AI framework-specific debugging tricks (e.g., `"python_common_errors": [...]`, `"spring_di_rules": [...]`, or `"my_internal_framework_rules": [...]`). The Python script dynamically finds *any* list in the JSON and automatically injects it into Claude's context!
+* **Prompt Overrides (Optional)**: The pipeline has highly optimized default prompts baked directly into the Python code. However, power users can completely override the AI's behavior by explicitly defining `file_extraction_prompt`, `fix_generation_system_prompt`, and `fix_generation_user_prompt`.
 
 ### 2. The `coding-standards.md`
 Define your strict human code review rules here. The AI is instructed to never violate these. For example, you can enforce the use of specific libraries, mandate immutability, and strictly forbid renaming classes or modifying test assertions illegally.
