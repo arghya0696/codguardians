@@ -21,6 +21,9 @@ You can see this pipeline actively running in the following reference repositori
 
 ## 📂 Architecture & File Structure
 
+<img width="1472" height="1160" alt="image" src="https://github.com/user-attachments/assets/273a3bb5-dcd1-43cc-82cf-42d85c98346e" />
+
+
 All automation scripts and configurations live inside the `.github/scripts/` directory.
 
 | Component | Description |
