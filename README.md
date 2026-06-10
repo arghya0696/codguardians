@@ -194,9 +194,9 @@ if: failure()
 
 Every workflow has exactly these stages:
 
-Claude predicts cross-repo blast radius before merge blocks CRITICAL changes
-TF plan or Docker build
-Claude self-heals on failure → patches code → fix/auto-heal-* branch → PR raised automatically
-Deploy (TF apply or ECS update-service)
-War room on deploy failure: log analyst → blast radius → config auditor → orchestrator → remediation (rollback/redeploy/hotfix-PR) → GitHub issue created
+* Claude predicts cross-repo blast radius before merge blocks CRITICAL changes
+* TF plan or Docker build
+* Claude self-heals on failure → patches code → fix/auto-heal-* branch → PR raised automatically
+* Deploy (TF apply or ECS update-service)
+* War room on deploy failure: log analyst → blast radius → config auditor → orchestrator → remediation (rollback/redeploy/hotfix-PR) → GitHub issue created
 
