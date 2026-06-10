@@ -21,9 +21,7 @@ You can see this pipeline actively running in the following reference repositori
 
 ## 📂 Architecture & File Structure
 
-<img width="1472" height="1120" alt="image" src="https://github.com/user-attachments/assets/1ec4bc9a-67fe-46d6-99f6-e10f4adf76a2" />
-
-
+<img width="1472" height="1080" alt="image" src="https://github.com/user-attachments/assets/4d1f1a26-99e1-4474-b407-3d1c7c2745a0" />
 
 All automation scripts and configurations live inside the `.github/scripts/` directory.
 
@@ -190,8 +188,6 @@ if: failure()
 ## ⚙️ Up Next
 
 <img width="1472" height="1640" alt="image" src="https://github.com/user-attachments/assets/ae6b3916-0b02-423b-96ca-d9efb9cce185" />
-
-
 Every workflow has exactly these stages:
 
 * Claude predicts cross-repo blast radius before merge blocks CRITICAL changes
