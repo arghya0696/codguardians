@@ -50,6 +50,41 @@ Define your strict human code review rules here. The AI is instructed to never v
 
 ---
 
+## 🧠 Step-by-Step: Tuning Your AI Skills (`ai-skills.json`)
+
+To make the AI an expert in your specific codebase, you need to tell it what errors to look for and how to solve them. Here is how to update your `ai-skills.json` for a new repository:
+
+**Step 1: Define Your Target Exceptions**
+Update the `target_exceptions` array with the exact error names your framework throws. The AI uses this to scan the logs quickly to find the exact failure trace.
+```json
+"target_exceptions": [
+  "AttributeError",
+  "TypeError",
+  "java.lang.NullPointerException"
+]
+```
+
+**Step 2: Add Framework-Specific Rules**
+You can create brand new JSON arrays to teach the AI your team's specific debugging tricks. The Python script automatically detects *any* array you add and injects it directly into the AI's "brain" context. Name the array whatever you want!
+```json
+"python_common_errors": [
+  "AttributeError: Often caused by accessing a method or attribute on None. Check initialization.",
+  "AssertionError: This means a logical calculation failed. Look at expected vs actual values."
+],
+"internal_company_rules": [
+  "If the database connection fails in tests, do not mock it. Ensure the test container is running."
+]
+```
+
+**Step 3: Update Execution Commands**
+Ensure `test_command` matches exactly how you run your tests locally, and `test_reports_glob` points to the directory where those test logs are saved.
+```json
+"test_command": ["pytest", "--junitxml=reports/test-results.xml", "-v"],
+"test_reports_glob": "reports/test-results.xml"
+```
+
+---
+
 ## 🛠️ GitHub Actions Setup
 
 To enable the Self-Healing pipeline in your repository, you need to configure your GitHub Actions YAML files and add the necessary secrets.
@@ -65,9 +100,11 @@ Your GitHub Actions workflow file must explicitly grant write permissions to all
 permissions:
   contents: write
   pull-requests: write
-
 ```
-### 💻 CI/CD Workflow Examples
+
+---
+
+## 💻 CI/CD Workflow Examples
 
 **For Python (`python-build.yml`):**
 Executes `pytest` and triggers the AI script if the step fails.
@@ -85,8 +122,8 @@ Executes `pytest` and triggers the AI script if the step fails.
         run: |
           echo "Tests failed. Invoking AI self-healing script..."
           python .github/scripts/self_healer.py
-
 ```
+
 **For Java (`maven-build.yml`):**
 Executes `mvn test` and triggers the AI script if the step fails.
 
@@ -102,15 +139,16 @@ Executes `mvn test` and triggers the AI script if the step fails.
          echo "Tests failed. Invoking AI self-healing script..."
          python .github/scripts/self_healer.py
 ```
+
 **For Terraform (`terraform-ci.yml`):**
 
 ```yaml
 jobs:
-terraform-plan:
-name: "Stage 1 · Terraform Validate"
-runs-on: ubuntu-latest
-outputs:
-plan_output: ${{ steps.capture.outputs.plan_output }}
+  terraform-plan:
+    name: "Stage 1 · Terraform Validate"
+    runs-on: ubuntu-latest
+    outputs:
+      plan_output: ${{ steps.capture.outputs.plan_output }}
 
     steps:
       - uses: actions/checkout@v4
@@ -144,11 +182,11 @@ plan_output: ${{ steps.capture.outputs.plan_output }}
         if: steps.validate.outputs.exitcode != '0'
         run: exit 1
 
-self-heal:
-name: "Stage 2 · AI Self-Heal"
-runs-on: ubuntu-latest
-needs: terraform-plan
-if: failure()
+  self-heal:
+    name: "Stage 2 · AI Self-Heal"
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    if: failure()
 
     steps:
       - uses: actions/checkout@v4
@@ -185,14 +223,16 @@ if: failure()
           GITHUB_TOKEN:      ${{ secrets.GITHUB_TOKEN }}
         run: python .github/scripts/self_healer.py
 ```
+
+---
+
 ## ⚙️ Up Next
 
 <img width="1472" height="1640" alt="image" src="https://github.com/user-attachments/assets/ae6b3916-0b02-423b-96ca-d9efb9cce185" />
-Every workflow has exactly these stages:
 
+Every workflow has exactly these stages:
 * Claude predicts cross-repo blast radius before merge blocks CRITICAL changes
 * TF plan or Docker build
 * Claude self-heals on failure → patches code → fix/auto-heal-* branch → PR raised automatically
 * Deploy (TF apply or ECS update-service)
 * War room on deploy failure: log analyst → blast radius → config auditor → orchestrator → remediation (rollback/redeploy/hotfix-PR) → GitHub issue created
-
